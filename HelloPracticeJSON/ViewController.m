@@ -11,6 +11,12 @@
 #import "MyTableViewCell.h"
 
 @interface ViewController ()<UITableViewDataSource,UITableViewDelegate>
+{
+    dataProcess * data;
+    NSMutableDictionary * hostipitalDetail;
+    MyTableViewCell *cell ;
+}
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *indicatorView;
 @property (weak, nonatomic) IBOutlet UITableView *mainTableView;
 @property NSMutableArray *objects;
 
@@ -24,11 +30,14 @@
     self.mainTableView.dataSource = self;
     self.mainTableView.delegate = self;
     if(self.objects == nil){
-    dataProcess * data=[dataProcess new];
-    self.objects = [NSMutableArray arrayWithArray:[data getResults]];
+        self.objects = [NSMutableArray new];
+        hostipitalDetail = [NSMutableDictionary new];
+        data=[dataProcess new];
+        [self.indicatorView startAnimating];
+        [data loadingJsonData];
     }
-        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(renewTableView) name:@"start" object:nil];
-//    [self loadingJsonData];
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(reloadCellView) name:@"start" object:nil];
+    //    [self loadingJsonData];
     
 }
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
@@ -38,36 +47,16 @@
     return self.objects.count;
 }
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    MyTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-    
-    cell.cellLabel.text = self.objects[indexPath.row][@"Name"];
-
+    cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    hostipitalDetail =[NSMutableDictionary dictionaryWithDictionary:self.objects[indexPath.row]];
+    cell.cellLabel.text = hostipitalDetail[@"Name"];
     return cell;
 }
--(void)loadingJsonData{
-    NSURL * url =[NSURL URLWithString:@"http://data.ntpc.gov.tw/api/v1/rest/datastore/382000000A-002136-001"];
-    NSURLSessionConfiguration * config =[NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession * session = [NSURLSession sessionWithConfiguration:config];
-    NSURLSessionTask * task =[session dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        
-        if(error) {
-            NSLog(@"Download JSON Fail: %@",error);
-            return ;
-        }
-        
-        NSDictionary* layer1 = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers | NSJSONReadingMutableLeaves error:nil];
-        NSDictionary * layer2 = layer1[@"result"];
-        NSArray * layer3 = layer2[@"records"];
-        
-        [[NSNotificationCenter defaultCenter]postNotificationName:@"start" object:nil];
-    }];
-    [task resume];
-}
 
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+-(void)reloadCellView{
+    self.objects = [NSMutableArray arrayWithArray:[data getResults]];
+    [self.indicatorView stopAnimating];
+    [self.mainTableView reloadData];
 }
 
 

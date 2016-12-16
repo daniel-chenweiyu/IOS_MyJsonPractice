@@ -16,7 +16,7 @@
 }
 -(void)loadingJsonData{
     // Prepare indicatorView
-    [self prepareIndicatorView];
+//    [self prepareIndicatorView];
     
     // Cancel previousTask if exist
     if(previousTask){
@@ -25,14 +25,14 @@
     }
     
     // Download and Display image.
-    [indicatorView startAnimating];
+//    [indicatorView startAnimating];
     hostipitalDetail = [NSMutableArray new];
     NSURL * url =[NSURL URLWithString:@"http://data.ntpc.gov.tw/api/v1/rest/datastore/382000000A-002136-001"];
     NSURLSessionConfiguration * config =[NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession * session = [NSURLSession sessionWithConfiguration:config];
     NSURLSessionTask * task =[session dataTaskWithURL:url completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [indicatorView stopAnimating];
+//            [indicatorView stopAnimating];
         });
         if(error) {
             NSLog(@"Download JSON Fail: %@",error);
@@ -51,7 +51,7 @@
 //            hostipitalDetail[i][4] = layer3[i][@"wgs84aX"];
 //            hostipitalDetail[i][5] = layer3[i][@"wgs84aY"];
 //        }
-        hostipitalDetail = layer2[@"result"];
+        hostipitalDetail =[NSMutableArray arrayWithArray:layer2[@"records"]];
         previousTask = nil;
         [[NSNotificationCenter defaultCenter]postNotificationName:@"start" object:nil];
     }];
@@ -61,7 +61,7 @@
 }
 
 -(NSMutableArray *)getResults{
-    [self loadingJsonData];
+//    [self loadingJsonData];
     return  hostipitalDetail;
 }
 
